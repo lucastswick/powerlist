@@ -19,9 +19,9 @@ var count = 3;
 document.addEventListener("DOMContentLoaded", function() {
 
   if (document.readyState != 'loading'){
-    document.removeEventListener('DOMContentLoaded');
     var t = document.querySelector(".powerlist")
 		powerlist = new PARLIAMENT.POWERLIST.PowerList(t);
+		powerlist.enableDrag();
 
 		var prependButton = document.querySelector("[data-action=prepend-item]");
 		prependButton.addEventListener("click", function(ev) {
