@@ -73,12 +73,56 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
       el.style.transform = "";
       el.style.webkitTransform = "";
-      
+
       el.removeAttribute("data-start-x");
       el.removeAttribute("data-start-y");
 
       _this._animate(startPositions);
 
+    }
+
+    this._onDragStart = function(ev) {
+      _this.dragging = ev.target;
+      Classist.addClass(_this.dragging, "dragging");
+    }
+
+    this._onDragEnd = function(ev) {
+      _this.dragging = undefined;
+    }
+
+    this._onDragOver = function(ev) {
+      ev.preventDefault();
+
+      var dropTarget = ev.toElement;
+      var type = "swap";
+
+      if (dropTarget !== _this.dragging) {
+
+        var startPositions = _this._getStartPositions();
+        
+        dropParent = dropTarget.parentNode;
+
+        dropTargetPos = _this.items.indexOf(dropTarget);
+        
+        if (dropTargetPos === 0 && !dropParent.children[0]) {
+          dropParent.appendChild(_this.dragging);
+        } else {
+          dropParent.insertBefore(_this.dragging, dropTarget);
+          // dropParent.insertBefore(this, dropParent.children[dropTargetPos]);
+        }
+
+        _this._animate(startPositions);
+
+      }
+
+    }
+
+    this._onDragLeave = function(ev) {
+    }
+
+    this._onDrop = function(ev) {
+
+      Classist.removeClass(_this.dragging, "dragging");
     }
 
     this._onAnimateComplete = function() {
@@ -94,8 +138,8 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
       }
 
       if (_this.requestID) {
-        window.cancelAnimationFrame(this.requestID);
-        this.requestID = undefined;
+        window.cancelAnimationFrame(_this.requestID);
+        _this.requestID = undefined;
       }
     }
 
@@ -123,6 +167,13 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
       el.addEventListener("touchstart", this._onTouchStart);
       el.addEventListener("touchmove", this._onTouchMove);
       el.addEventListener("touchend", this._onTouchEnd);
+
+      el.setAttribute("draggable", true);
+      el.addEventListener("dragstart", this._onDragStart);
+      el.addEventListener("dragend", this._onDragEnd);
+      el.addEventListener("dragover", this._onDragOver);
+      el.addEventListener("dragleave", this._onDragLeave);
+      el.addEventListener("drop", this._onDrop);
     }
 
   },
@@ -149,6 +200,13 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
       el.addEventListener("touchstart", this._onTouchStart);
       el.addEventListener("touchmove", this._onTouchMove);
       el.addEventListener("touchend", this._onTouchEnd);
+
+      el.setAttribute("draggable", true);
+      el.addEventListener("dragstart", this._onDragStart);
+      el.addEventListener("dragend", this._onDragEnd);
+      el.addEventListener("dragover", this._onDragOver);
+      el.addEventListener("dragleave", this._onDragLeave);
+      el.addEventListener("drop", this._onDrop);
     }
   },
 
@@ -245,6 +303,13 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
       el.addEventListener("touchstart", _this._onTouchStart);
       el.addEventListener("touchmove", this._onTouchMove);
       el.addEventListener("touchend", _this._onTouchEnd);
+
+      el.setAttribute("draggable", true);
+      el.addEventListener("dragstart", _this._onDragStart);
+      el.addEventListener("dragend", _this._onDragEnd);
+      el.addEventListener("dragover", _this._onDragOver);
+      el.addEventListener("dragleave", _this._onDragLeave);
+      el.addEventListener("drop", _this._onDrop);
     }
   },
 

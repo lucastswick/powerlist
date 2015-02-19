@@ -3,6 +3,15 @@
   -moz-box-sizing: border-box;
   box-sizing: border-box; }
 
+[draggable] {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Required to make elements draggable in old WebKit */
+  -khtml-user-drag: element;
+  -webkit-user-drag: element; }
+
 .debug {
   border: 1px solid red; }
 
@@ -37,6 +46,12 @@
     .powerlist .item:hover {
       color: #F64515;
       border-color: #F64515; }
+    .powerlist .item .dragging {
+      color: #F64515;
+      border-color: #F64515;
+      opacity: .5; }
+    .powerlist .item.drag-over {
+      opacity: .5; }
 
 .animate-on-transforms {
   -webkit-transition: all, 0.4s;
