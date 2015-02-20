@@ -1090,13 +1090,163 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
     }
 
+    this._makeDraggable = function(el) {
+      el.addEventListener("touchstart", this._onTouchStart);
+      el.addEventListener("touchmove", this._onTouchMove);
+      el.addEventListener("touchend", this._onTouchEnd);
+
+      // el.setAttribute("draggable", true);
+      el.addEventListener("mousedown", this._onDragStart);
+      // el.addEventListener("dragend", this._onDragEnd);
+      // el.addEventListener("dragover", this._onDragOver);
+      // el.addEventListener("dragleave", this._onDragLeave);
+      // el.addEventListener("drop", this._onDrop);
+    }
+
     this._onDragStart = function(ev) {
+
       _this.dragging = ev.target;
+
+      _this.placeholder = _this.dragging.cloneNode(true);
+      Classist.addClass(_this.placeholder, "placeholder");
+      _this.dragging.parentNode.insertBefore(_this.placeholder, _this.dragging);
+
+      var placeholderBounds = _this.placeholder.getBoundingClientRect();
+      var draggingBounds = _this.dragging.getBoundingClientRect();
+      var parentBounds = _this.target.getBoundingClientRect();
+
+      _this.placeholderStartX = draggingBounds.left;
+      _this.placeholderStartY = draggingBounds.top;
+      // _this.offsetX = ev.pageX - _this.placeholderStartX;
+      // _this.offsetY = ev.pageY - _this.placeholderStartY;
+      _this.offsetX = placeholderBounds.width >> 1;
+      _this.offsetY = placeholderBounds.height >> 1;
+
+      var x = ~~(ev.pageX - parentBounds.left - _this.offsetX);
+      var y = ~~(ev.pageY - parentBounds.top - _this.offsetY);
+
+      var style = _this.placeholder.style;
+      style.transform = "translateX(" + x + "px) translateY(" + y + "px)";
+      style.webkitTransform = "translateX(" + x + "px) translateY(" + y + "px)";
+
       Classist.addClass(_this.dragging, "dragging");
+
+      document.removeEventListener("mousemove", _this._onDrag);
+      document.addEventListener("mousemove", _this._onDrag);
+
+      document.removeEventListener("mouseup", _this._onDragEnd);
+      document.addEventListener("mouseup", _this._onDragEnd);
+      
+    }
+
+    this._onDrag = function(ev) {
+
+      var placeholderBounds = _this.placeholder.getBoundingClientRect();
+      var draggingBounds = _this.dragging.getBoundingClientRect();
+      var parentBounds = _this.target.getBoundingClientRect();
+
+      var x = ~~(ev.pageX - parentBounds.left - _this.offsetX);
+      var y = ~~(ev.pageY - parentBounds.top - _this.offsetY);
+      
+      // var startPositions = _this._getStartPositions();
+
+      var style = _this.placeholder.style;
+      style.transform = "translateX(" + x + "px) translateY(" + y + "px)";
+      style.webkitTransform = "translateX(" + x + "px) translateY(" + y + "px)";
+
+      // hide placeholder so we can retrieve item under cursor
+      _this.placeholder.style.display = "none";
+
+      var over = document.elementFromPoint(ev.pageX, ev.pageY);
+
+      if (over != _this.overElement && _this.overElement) {
+        _this.overElement.style.opacity = 1;
+      }
+              
+      if (_this.target.contains(over)) {
+        
+        if (over != _this.target) {
+
+          if (over != _this.dragging) {
+          
+            // style the element we are over
+            over.style.opacity = .5;
+
+            var itemIndex = _this.items.indexOf(_this.dragging);
+            var overIndex = _this.items.indexOf(over);
+            var overBounds = over.getBoundingClientRect();
+            var dir = (ev.pageX < _this.lastPageX) ? "left" : "right";
+
+
+            // if we're more than halfway past the x-axis of the item we're over, we insert after
+            /*
+            if (ev.pageX < overBounds.left + overBounds.width / 2 ) {
+              // console.log('left side');
+              _this.dragging.parentNode.insertBefore(_this.dragging, over);
+            } else {
+              // console.log('right side');
+              if (overIndex == _this.itemCount - 1) {
+                _this.dragging.parentNode.appendChild(_this.dragging);
+              } else {
+                _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex + 1]);
+              }
+            }
+            */
+
+            if (dir === "left") {
+              if (overIndex === _this.itemCount - 1) {
+                _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
+              } else {
+                _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
+              }
+            } else if (dir === "right") {
+              if (overIndex === _this.itemCount - 1) {
+                _this.dragging.parentNode.appendChild(_this.dragging);
+              } else {
+                _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex + 1]);
+              }
+            }
+
+            var startPositions = _this._getStartPositions();
+
+            _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
+
+            _this._animate(startPositions);
+
+          }
+
+          _this.overElement = over;
+        }
+          
+      }
+
+      // turn placeholder back on
+      _this.placeholder.style.display = "inline";
+      _this.lastPageX = ev.pageX;
+
     }
 
     this._onDragEnd = function(ev) {
+
+      Classist.removeClass(_this.dragging, "dragging");
+
       _this.dragging = undefined;
+
+      if (_this.placeholder) {
+        _this.placeholder.parentNode.removeChild(_this.placeholder);
+        _this.placeholder = undefined;
+      }
+
+      if (_this.overElement) {
+        _this.overElement.style.opacity = 1;
+        _this.overElement = undefined;
+      }
+
+      _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li"));
+
+      document.removeEventListener("mousemove", _this._onDrag);
+      document.removeEventListener("mouseup", _this._onDragEnd);
+
     }
 
     this._onDragOver = function(ev) {
@@ -1173,16 +1323,7 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
     this._animate(startPositions);
 
     if (this.canDragElements) {
-      el.addEventListener("touchstart", this._onTouchStart);
-      el.addEventListener("touchmove", this._onTouchMove);
-      el.addEventListener("touchend", this._onTouchEnd);
-
-      el.setAttribute("draggable", true);
-      el.addEventListener("dragstart", this._onDragStart);
-      el.addEventListener("dragend", this._onDragEnd);
-      el.addEventListener("dragover", this._onDragOver);
-      el.addEventListener("dragleave", this._onDragLeave);
-      el.addEventListener("drop", this._onDrop);
+      this._makeDraggable(el);
     }
 
   },
@@ -1206,16 +1347,7 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
     this._animate(startPositions);
 
     if (this.canDragElements) {
-      el.addEventListener("touchstart", this._onTouchStart);
-      el.addEventListener("touchmove", this._onTouchMove);
-      el.addEventListener("touchend", this._onTouchEnd);
-
-      el.setAttribute("draggable", true);
-      el.addEventListener("dragstart", this._onDragStart);
-      el.addEventListener("dragend", this._onDragEnd);
-      el.addEventListener("dragover", this._onDragOver);
-      el.addEventListener("dragleave", this._onDragLeave);
-      el.addEventListener("drop", this._onDrop);
+      this._makeDraggable(el);
     }
   },
 
@@ -1309,16 +1441,7 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
     for (var i = 0; i < this.itemCount; i++) {
       el = this.items[i];
-      el.addEventListener("touchstart", _this._onTouchStart);
-      el.addEventListener("touchmove", this._onTouchMove);
-      el.addEventListener("touchend", _this._onTouchEnd);
-
-      el.setAttribute("draggable", true);
-      el.addEventListener("dragstart", _this._onDragStart);
-      el.addEventListener("dragend", _this._onDragEnd);
-      el.addEventListener("dragover", _this._onDragOver);
-      el.addEventListener("dragleave", _this._onDragLeave);
-      el.addEventListener("drop", _this._onDrop);
+      this._makeDraggable(el);
     }
   },
 

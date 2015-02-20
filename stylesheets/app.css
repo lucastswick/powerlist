@@ -42,12 +42,27 @@
     margin-right: 4px;
     padding: 4px 12px;
     border: 4px solid #222;
-    cursor: pointer; }
+    background: #eaeaea;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none; }
     .powerlist .item:hover {
       color: #F64515;
       border-color: #F64515; }
-    .powerlist .item .dragging {
+    .powerlist .item.placeholder {
+      float: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: .7;
+      z-index: 1; }
+    .powerlist .item.dragging {
       color: #F64515;
+      background: yellow;
       border-color: #F64515;
       opacity: .5; }
     .powerlist .item.drag-over {
