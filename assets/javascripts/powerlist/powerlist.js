@@ -17,7 +17,7 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
     this.items = Array.prototype.slice.call(this.target.querySelectorAll("li"));
     this.itemCount = this.items.length;
     this.canDragElements = false;
-    this.animateDuringDrag = !window.is_mobile();
+    this.animateDuringDrag = true;//!window.is_mobile();
   },
 
   initEvents: function() {
@@ -101,9 +101,10 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
     this._onDragStart = function(ev) {
 
-      ev.preventDefault();
-
       _this.dragging = ev.target;
+
+      _this.pageX = ev.pageX;
+      _this.pageY = ev.pageY;
 
       _this.placeholder = _this.dragging.cloneNode(true);
       Classist.addClass(_this.placeholder, "placeholder");
@@ -134,19 +135,33 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
       document.removeEventListener("mouseup", _this._onDragEnd);
       document.addEventListener("mouseup", _this._onDragEnd);
+
+      if (_this.dragRequestID) {
+        window.cancelAnimationFrame(_this.dragRequestID);
+        _this.dragRequestID = undefined;
+      }
+
+      _this.dragRequestID = window.requestAnimationFrame(_this._update);
       
     }
+
 
     this._onDrag = function(ev) {
 
       ev.preventDefault();
+      _this.pageX = ev.pageX;
+      _this.pageY = ev.pageY;
+
+    }
+
+    this._update = function() {
 
       var placeholderBounds = _this.placeholder.getBoundingClientRect();
       var draggingBounds = _this.dragging.getBoundingClientRect();
       var parentBounds = _this.target.getBoundingClientRect();
 
-      var x = ~~(ev.pageX - parentBounds.left - _this.offsetX);
-      var y = ~~(ev.pageY - parentBounds.top - _this.offsetY);
+      var x = ~~(_this.pageX - parentBounds.left - _this.offsetX);
+      var y = ~~(_this.pageY - parentBounds.top - _this.offsetY);
       
       // var startPositions = _this._getStartPositions();
 
@@ -157,14 +172,14 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
       // hide placeholder so we can retrieve item under cursor
       _this.placeholder.style.display = "none";
 
-      // var over = document.elementFromPoint(ev.pageX, ev.pageY);
+      // var over = document.elementFromPoint(_this.pageX, _this.pageY);
       for (var i=0; i < _this.itemCount; i++) {
         var item = _this.items[i];
         var itemRect = item.getBoundingClientRect();
         var itemX = itemRect.left;
         var itemY = itemRect.top;
 
-        if (ev.pageX > itemX && ev.pageX < itemX + itemRect.width && ev.pageY > itemY && ev.pageY < itemY + itemRect.height) {
+        if (_this.pageX > itemX && _this.pageX < itemX + itemRect.width && _this.pageY > itemY && _this.pageY < itemY + itemRect.height) {
           var over = item;
         }
       }
@@ -185,10 +200,15 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
             var itemIndex = _this.items.indexOf(_this.dragging);
             var overIndex = _this.items.indexOf(over);
             var overBounds = over.getBoundingClientRect();
-            var dir = (ev.pageX < _this.lastPageX) ? "left" : "right";
 
+            if (_this.pageX < _this.lastPageX) {
+              var dir = "left";
+            } else if (_this.pageX > _this.lastPageX) {
+              dir = "right";
+            }
+            
             if (dir === "left") {
-              if (overIndex === _this.itemCount - 1) {
+              if (overIndex === 0) {
                 _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
               } else {
                 _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
@@ -214,6 +234,7 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
             }
 
+
           }
 
           _this.overElement = over;
@@ -223,11 +244,25 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
       // turn placeholder back on
       _this.placeholder.style.display = "inline";
-      _this.lastPageX = ev.pageX;
+      _this.lastPageX = _this.pageX;
+    
+
+
+      if (_this.dragRequestID) {
+        window.cancelAnimationFrame(_this.dragRequestID);
+        _this.dragRequestID = undefined;
+      }
+
+      _this.dragRequestID = window.requestAnimationFrame(_this._update);
 
     }
 
     this._onDragEnd = function(ev) {
+
+      if (_this.dragRequestID) {
+        window.cancelAnimationFrame(_this.dragRequestID);
+        _this.dragRequestID = undefined;
+      }
 
       Classist.removeClass(_this.dragging, "dragging");
 
@@ -247,6 +282,8 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
       document.removeEventListener("mousemove", _this._onDrag);
       document.removeEventListener("mouseup", _this._onDragEnd);
+
+
 
     }
 
