@@ -98,7 +98,8 @@ module.exports = function (grunt) {
 
     concat: {
       js: {
-        src: ['assets/javascripts/vendor/fastclick.js',
+        src: ['assets/javascripts/vendor/detect-mobile-browser.js',
+              'assets/javascripts/vendor/fastclick.js',
               'assets/javascripts/vendor/augment.js',
               'assets/javascripts/vendor/event-stream.js',
               'assets/javascripts/parliament/namespace.js',

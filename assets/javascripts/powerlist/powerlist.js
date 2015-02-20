@@ -17,6 +17,7 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
     this.items = Array.prototype.slice.call(this.target.querySelectorAll("li"));
     this.itemCount = this.items.length;
     this.canDragElements = false;
+    this.animateDuringDrag = !window.is_mobile();
   },
 
   initEvents: function() {
@@ -82,9 +83,13 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
     }
 
     this._makeDraggable = function(el) {
-      el.addEventListener("touchstart", this._onTouchStart);
-      el.addEventListener("touchmove", this._onTouchMove);
-      el.addEventListener("touchend", this._onTouchEnd);
+      el.addEventListener("touchstart", this._onDragStart);
+      el.addEventListener("touchmove", this._onDrag);
+      el.addEventListener("touchend", this._onDragEnd);
+
+      // el.addEventListener("touchstart", this._onTouchStart);
+      // el.addEventListener("touchmove", this._onTouchMove);
+      // el.addEventListener("touchend", this._onTouchEnd);
 
       // el.setAttribute("draggable", true);
       el.addEventListener("mousedown", this._onDragStart);
@@ -148,7 +153,17 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
       // hide placeholder so we can retrieve item under cursor
       _this.placeholder.style.display = "none";
 
-      var over = document.elementFromPoint(ev.pageX, ev.pageY);
+      // var over = document.elementFromPoint(ev.pageX, ev.pageY);
+      for (var i=0; i < _this.itemCount; i++) {
+        var item = _this.items[i];
+        var itemRect = item.getBoundingClientRect();
+        var itemX = itemRect.left;
+        var itemY = itemRect.top;
+
+        if (ev.pageX > itemX && ev.pageX < itemX + itemRect.width && ev.pageY > itemY && ev.pageY < itemY + itemRect.height) {
+          var over = item;
+        }
+      }
 
       if (over != _this.overElement && _this.overElement) {
         _this.overElement.style.opacity = 1;
@@ -168,22 +183,6 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
             var overBounds = over.getBoundingClientRect();
             var dir = (ev.pageX < _this.lastPageX) ? "left" : "right";
 
-
-            // if we're more than halfway past the x-axis of the item we're over, we insert after
-            /*
-            if (ev.pageX < overBounds.left + overBounds.width / 2 ) {
-              // console.log('left side');
-              _this.dragging.parentNode.insertBefore(_this.dragging, over);
-            } else {
-              // console.log('right side');
-              if (overIndex == _this.itemCount - 1) {
-                _this.dragging.parentNode.appendChild(_this.dragging);
-              } else {
-                _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex + 1]);
-              }
-            }
-            */
-
             if (dir === "left") {
               if (overIndex === _this.itemCount - 1) {
                 _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
@@ -198,11 +197,18 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
               }
             }
 
-            var startPositions = _this._getStartPositions();
 
-            _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
+            if (_this.animateDuringDrag) {
+            
+              var startPositions = _this._getStartPositions();
+              _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
+              _this._animate(startPositions);
+            
+            } else {
 
-            _this._animate(startPositions);
+              _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
+
+            }
 
           }
 
