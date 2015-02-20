@@ -1195,72 +1195,96 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
       // hide placeholder so we can retrieve item under cursor
       _this.placeholder.style.display = "none";
 
-      // var over = document.elementFromPoint(_this.pageX, _this.pageY);
+      var overElement = document.elementFromPoint(_this.pageX, _this.pageY);
+
       for (var i=0; i < _this.itemCount; i++) {
         var item = _this.items[i];
         var itemRect = item.getBoundingClientRect();
         var itemX = itemRect.left;
         var itemY = itemRect.top;
 
-        if (_this.pageX > itemX && _this.pageX < itemX + itemRect.width && _this.pageY > itemY && _this.pageY < itemY + itemRect.height) {
+        // 4 is the margin right of the item
+        if (_this.pageX > itemX && _this.pageX < itemX + itemRect.width + 4 && _this.pageY > itemY && _this.pageY < itemY + itemRect.height + 4) {
           var over = item;
         }
       }
 
       if (over != _this.overElement && _this.overElement) {
-        _this.overElement.style.opacity = 1;
+        // _this.overElement.style.opacity = 1;
       }
-              
-      if (_this.target.contains(over)) {
-        
-        if (over != _this.target) {
 
-          if (over != _this.dragging) {
+      if (overElement == _this.target) {
+        // if we are to the right OR below the last item
+        if (_this.pageX > itemX && _this.pageY > itemY) {
+          _this.dragging.parentNode.appendChild(_this.dragging);
+
+          if (_this.animateDuringDrag) {
+            
+            var startPositions = _this._getStartPositions();
+            _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
+            _this._animate(startPositions);
           
-            // style the element we are over
-            over.style.opacity = .5;
+          } else {
 
-            var itemIndex = _this.items.indexOf(_this.dragging);
-            var overIndex = _this.items.indexOf(over);
-            var overBounds = over.getBoundingClientRect();
-
-            if (_this.pageX < _this.lastPageX) {
-              var dir = "left";
-            } else if (_this.pageX > _this.lastPageX) {
-              dir = "right";
-            }
-            
-            if (dir === "left") {
-              if (overIndex === 0) {
-                _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
-              } else {
-                _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
-              }
-            } else if (dir === "right") {
-              if (overIndex === _this.itemCount - 1) {
-                _this.dragging.parentNode.appendChild(_this.dragging);
-              } else {
-                _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex + 1]);
-              }
-            }
-
-
-            if (_this.animateDuringDrag) {
-            
-              var startPositions = _this._getStartPositions();
-              _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
-              _this._animate(startPositions);
-            
-            } else {
-
-              _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
-
-            }
-
+            _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
 
           }
+        }
 
-          _this.overElement = over;
+      // over an item, not the container ul
+      } else {
+              
+        if (_this.target.contains(over)) {
+          
+          if (over != _this.target) {
+
+            if (over != _this.dragging) {
+            
+              // style the element we are over
+              // over.style.opacity = .5;
+
+              var itemIndex = _this.items.indexOf(_this.dragging);
+              var overIndex = _this.items.indexOf(over);
+              var overBounds = over.getBoundingClientRect();
+
+              if (_this.pageX < _this.lastPageX) {
+                var dir = "left";
+              } else if (_this.pageX > _this.lastPageX) {
+                dir = "right";
+              }
+              
+              if (dir === "left") {
+                if (overIndex === 0) {
+                  _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
+                } else {
+                  _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex]);
+                }
+              } else if (dir === "right") {
+                if (overIndex === _this.itemCount - 1) {
+                  _this.dragging.parentNode.appendChild(_this.dragging);
+                } else {
+                  _this.dragging.parentNode.insertBefore(_this.dragging, _this.items[overIndex + 1]);
+                }
+              }
+
+
+              if (_this.animateDuringDrag) {
+              
+                var startPositions = _this._getStartPositions();
+                _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
+                _this._animate(startPositions);
+              
+              } else {
+
+                _this.items = Array.prototype.slice.call(_this.target.querySelectorAll("li:not(.placeholder)"));
+
+              }
+
+
+            }
+
+            _this.overElement = over;
+          }
         }
           
       }
@@ -1297,7 +1321,7 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
       }
 
       if (_this.overElement) {
-        _this.overElement.style.opacity = 1;
+        // _this.overElement.style.opacity = 1;
         _this.overElement = undefined;
       }
 
