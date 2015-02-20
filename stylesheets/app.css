@@ -1,7 +1,8 @@
 * {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
-  box-sizing: border-box; }
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; }
 
 [draggable] {
   -moz-user-select: none;
@@ -21,7 +22,9 @@
   background: #F64515;
   color: white;
   text-decoration: none; }
-  .button:hover {
+  body.desktop .button:hover {
+    background: #fa9377; }
+  .button:active {
     background: #fa9377; }
 
 .powerlist {
@@ -50,7 +53,7 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none; }
-    .powerlist .item:hover {
+    body.desktop .powerlist .item:hover {
       color: #F64515;
       border-color: #F64515; }
     .powerlist .item.placeholder {
@@ -58,7 +61,7 @@
       position: absolute;
       top: 0;
       left: 0;
-      opacity: .7;
+      opacity: .3;
       z-index: 1; }
     .powerlist .item.dragging {
       color: #F64515;

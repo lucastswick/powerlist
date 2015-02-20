@@ -53,6 +53,7 @@
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
 [draggable] {
@@ -77,6 +78,12 @@
 	text-decoration: none;
 
 	&:hover {
+		body.desktop & {
+			background: lighten($red, 20%);
+		}
+	}
+
+	&:active {
 		background: lighten($red, 20%);
 	}
 }
@@ -109,8 +116,10 @@
 		@include unselectable;
 
 		&:hover {
-			color: $red;
-			border-color: $red;
+			body.desktop & {
+				color: $red;
+				border-color: $red;
+			}
 		}
 
 		&.placeholder {
@@ -118,7 +127,7 @@
 			position: absolute;
 			top: 0;
 			left: 0;
-			opacity: .7;
+			opacity: .3;
 			z-index: 1;
 		}
 

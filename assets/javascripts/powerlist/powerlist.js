@@ -101,6 +101,8 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
 
     this._onDragStart = function(ev) {
 
+      ev.preventDefault();
+
       _this.dragging = ev.target;
 
       _this.placeholder = _this.dragging.cloneNode(true);
@@ -136,6 +138,8 @@ PARLIAMENT.POWERLIST.PowerList = defclass({
     }
 
     this._onDrag = function(ev) {
+
+      ev.preventDefault();
 
       var placeholderBounds = _this.placeholder.getBoundingClientRect();
       var draggingBounds = _this.dragging.getBoundingClientRect();
